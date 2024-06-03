@@ -36,7 +36,7 @@ from multiprocessing.pool import ThreadPool
 
 
 # Parameters
-IMG_FORMATS = ["bmp", "jpg", "jpeg", "png", "tif", "tiff", "dng", "webp", "mpo", ' npy']
+IMG_FORMATS = ["bmp", "jpg", "jpeg", "png", "tif", "tiff", "dng", "webp", "mpo", 'npy']
 VID_FORMATS = ["mp4", "mov", "avi", "mkv"]
 IMG_FORMATS.extend([f.upper() for f in IMG_FORMATS])
 VID_FORMATS.extend([f.upper() for f in VID_FORMATS])
@@ -702,8 +702,10 @@ class LoadData:
             imgp = [i for i in files if i.split('.')[-1] in IMG_FORMATS]
             vidp = [v for v in files if v.split('.')[-1] in VID_FORMATS]
         self.files = imgp + vidp
+
         self.nf = len(self.files)
         self.type = 'image'
+
         if len(vidp) > 0:
             self.add_video(vidp[0])  # new video
         else:
@@ -739,7 +741,8 @@ class LoadData:
         else:
             # Read image
             self.count += 1
-            img = cv2.imread(path)  # BGR
+            # img = cv2.imread(path)  # BGR  @@@ v
+            img = np.load(path)
         return img, path, self.cap
 
     def add_video(self, path):

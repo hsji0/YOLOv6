@@ -142,12 +142,12 @@ if __name__ == '__main__':
     sys.argv = [
         'train.py',  # Script name, it's important to keep it at the beginning
         '--img-size', '640',
-        '--batch-size', '2',
+        '--batch-size', '1',
         '--epochs', '500',
         '--device', '0',
-        '--conf-file', r"C:\Users\ATI\Documents\GitHub\YOLOv6_\configs\yolov6_lite\yolov6_lite_s.py",
-        '--data-path', r"C:\Users\ATI\Documents\GitHub\YOLOv6_\data\ati_new_round.yaml",
-        '--output-dir',r"D:\3D AI\3.RESULT\YOLOv6",
+        '--conf-file', r"C:\Users\hsji\Documents\GitHub\YOLOv6\configs\yolov6_lite\yolov6_lite_s.py",
+        '--data-path', r"C:\Users\hsji\Documents\GitHub\YOLOv6\data\ati_new_round.yaml",
+        '--output-dir',r"C:\Users\hsji\Documents\GitHub\YOLOv6\result",  # temp
     ]
 
     args = get_args_parser().parse_args()

@@ -515,7 +515,7 @@ class CSPBepBackbone_P6(nn.Module):
 
         return tuple(outputs)
 
-class Lite_EffiBackbone(nn.Module):
+class Lite_EffiBackbone(nn.Module):   # @@@ v
     def __init__(self,
                  in_channels,
                  mid_channels,

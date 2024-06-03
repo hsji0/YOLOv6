@@ -47,7 +47,9 @@ class Inferer:
             self.half = False
 
         if self.device.type != 'cpu':
-            self.model(torch.zeros(1, 3, *self.img_size).to(self.device).type_as(next(self.model.model.parameters())))  # warmup
+            # self.model(torch.zeros(1, 3, *self.img_size).to(self.device).type_as(
+            #     next(self.model.model.parameters())))  # warmup
+            self.model(torch.zeros(1, 2, *self.img_size).to(self.device).type_as(next(self.model.model.parameters())))  # warmup
 
         # Load data
         self.webcam = webcam
@@ -101,7 +103,11 @@ class Inferer:
 
             if len(det):
                 det[:, :4] = self.rescale(img.shape[2:], det[:, :4], img_src.shape).round()
+                with open(txt_path + '.txt', 'w') as f: # @@@ v
+                    f.write("")
+
                 for *xyxy, conf, cls in reversed(det):
+                    save_txt = True
                     if save_txt:  # Write to file
                         xywh = (self.box_convert(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
                         line = (cls, *xywh, conf)
@@ -142,7 +148,8 @@ class Inferer:
             # Save results (image with detections)
             if save_img:
                 if self.files.type == 'image':
-                    cv2.imwrite(save_path, img_src)
+                    # cv2.imwrite(save_path, img_src)
+                    cv2.imwrite(save_path.replace("npy","bmp"), img_src[:,:,0:1])
                 else:  # 'video' or 'stream'
                     if vid_path != save_path:  # new video
                         vid_path = save_path
@@ -240,18 +247,18 @@ class Inferer:
     def plot_box_and_label(image, lw, box, label='', color=(128, 128, 128), txt_color=(255, 255, 255), font=cv2.FONT_HERSHEY_COMPLEX):
         # Add one xyxy box to image with label
         p1, p2 = (int(box[0]), int(box[1])), (int(box[2]), int(box[3]))
-        cv2.rectangle(image, p1, p2, color, thickness=lw, lineType=cv2.LINE_AA)
-        if label:
-            tf = max(lw - 1, 1)  # font thickness
-            w, h = cv2.getTextSize(label, 0, fontScale=lw / 3, thickness=tf)[0]  # text width, height
-            outside = p1[1] - h - 3 >= 0  # label fits outside box
-            p2 = p1[0] + w, p1[1] - h - 3 if outside else p1[1] + h + 3
-            cv2.rectangle(image, p1, p2, color, -1, cv2.LINE_AA)  # filled
-            cv2.putText(image, label, (p1[0], p1[1] - 2 if outside else p1[1] + h + 2), font, lw / 3, txt_color,
-                        thickness=tf, lineType=cv2.LINE_AA)
+        cv2.rectangle(image, p1, p2, color, thickness=1, lineType=cv2.LINE_AA)
+        # if label:
+        #     tf = max(lw - 1, 1)  # font thickness
+        #     w, h = cv2.getTextSize(label, 0, fontScale=lw / 3, thickness=tf)[0]  # text width, height
+        #     outside = p1[1] - h - 3 >= 0  # label fits outside box
+        #     p2 = p1[0] + w, p1[1] - h - 3 if outside else p1[1] + h + 3
+        #     cv2.rectangle(image, p1, p2, color, 1, cv2.LINE_AA)  # filled
+        #     cv2.putText(image, label, (p1[0], p1[1] - 2 if outside else p1[1] + h + 2), font, lw / 3, txt_color,
+        #                 thickness=tf, lineType=cv2.LINE_AA)
 
     @staticmethod
-    def font_check(font='./yolov6/utils/Arial.ttf', size=10):
+    def font_check(font=r"C:\Users\hsji\Documents\GitHub\YOLOv6\yolov6\utils\Arial.ttf", size=10): # @@@ v
         # Return a PIL TrueType Font, downloading to CONFIG_DIR if necessary
         assert osp.exists(font), f'font path not exists: {font}'
         try:

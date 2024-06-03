@@ -21,11 +21,11 @@ def get_args_parser(add_help=True):
     parser.add_argument('--source', type=str, default='data/images', help='the source path, e.g. image-file/dir.')
     parser.add_argument('--webcam', action='store_true', help='whether to use webcam.')
     parser.add_argument('--webcam-addr', type=str, default='0', help='the web camera address, local camera or rtsp address.')
-    parser.add_argument('--yaml', type=str, default='data/coco.yaml', help='data yaml file.')
+    parser.add_argument('--yaml', type=str, default=r"C:\Users\hsji\Documents\GitHub\YOLOv6\data\ati_new_round.yaml", help='data yaml file.')
     parser.add_argument('--img-size', nargs='+', type=int, default=[640, 640], help='the image-size(h,w) in inference size.')
     parser.add_argument('--conf-thres', type=float, default=0.4, help='confidence threshold for inference.')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='NMS IoU threshold for inference.')
-    parser.add_argument('--max-det', type=int, default=1000, help='maximal inferences per image.')
+    parser.add_argument('--max-det', type=int, default=9000, help='maximal inferences per image.')
     parser.add_argument('--device', default='0', help='device to run our model i.e. 0 or 0,1,2,3 or cpu.')
     parser.add_argument('--save-txt', action='store_true', help='save results to *.txt.')
     parser.add_argument('--not-save-img', action='store_true', help='do not save visuallized inference results.')
@@ -39,10 +39,10 @@ def get_args_parser(add_help=True):
     parser.add_argument('--hide-conf', default=False, action='store_true', help='hide confidences.')
     parser.add_argument('--half', action='store_true', help='whether to use FP16 half-precision inference.')
 
-    args = parser.parse_args()
-    LOGGER.info(args)
-    return args
-
+    # args = parser.parse_args()
+    # LOGGER.info(args)
+    # return args
+    return parser
 
 @torch.no_grad()
 def run(weights=osp.join(ROOT, 'yolov6s.pt'),
@@ -116,5 +116,21 @@ def main(args):
 
 
 if __name__ == "__main__":
-    args = get_args_parser()
+    # args = get_args_parser()
+    # main(args)
+
+    sys.argv = [
+        'infer.py',  # Script name, it's important to keep it at the beginning
+        '--weights', r"D:\1.BUMP_RECIPE\3.RESULT\last_ckpt.pt",
+        '--conf-thres', "0.001",
+        '--iou-thres', "0.5",
+        '--max-det', "8000",
+        '--device', '0',
+        '--source', r"D:\1.BUMP_RECIPE\1.DATA\ATI_Round_10\TEST\crops\concat",  # D:\3D AI\2.DATA\ATI_Round_10\TEST\crops\tiles\current_test
+        '--save-dir', r"D:\1.BUMP_RECIPE\3.RESULT\sample_test_result",
+        '--max-det', "8000"
+    ]
+
+    args = get_args_parser().parse_args()
+    # print(f"=> args :{args}")
     main(args)
