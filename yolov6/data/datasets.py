@@ -23,7 +23,7 @@ from torch.utils.data import Dataset
 import torch.distributed as dist
 
 from .data_augment import (
-    augment_hsv,
+    # augment_hsv,
     letterbox,
     mixup,
     random_affine,
@@ -36,7 +36,7 @@ from multiprocessing.pool import ThreadPool
 
 
 # Parameters
-IMG_FORMATS = ["bmp", "jpg", "jpeg", "png", "tif", "tiff", "dng", "webp", "mpo"]
+IMG_FORMATS = ["bmp", "jpg", "jpeg", "png", "tif", "tiff", "dng", "webp", "mpo", ' npy']
 VID_FORMATS = ["mp4", "mov", "avi", "mkv"]
 IMG_FORMATS.extend([f.upper() for f in IMG_FORMATS])
 VID_FORMATS.extend([f.upper() for f in VID_FORMATS])
@@ -268,13 +268,14 @@ class TrainValDataset(Dataset):
             # im = copy.deepcopy(im)
             return self.imgs[index], self.imgs_hw0[index], self.imgs_hw[index]
         else:
-            try:
-                im = cv2.imread(path)
-                assert im is not None, f"opencv cannot read image correctly or {path} not exists"
-            except Exception as e:
-                print(e)
-                im = cv2.cvtColor(np.asarray(Image.open(path)), cv2.COLOR_RGB2BGR)
-                assert im is not None, f"Image Not Found {path}, workdir: {os.getcwd()}"
+            # try:
+            #     im = cv2.imread(path)
+            #     assert im is not None, f"opencv cannot read image correctly or {path} not exists"
+            # except Exception as e:
+            #     print(e)
+            #     im = cv2.cvtColor(np.asarray(Image.open(path)), cv2.COLOR_RGB2BGR)
+            #     assert im is not None, f"Image Not Found {path}, workdir: {os.getcwd()}"
+            im = np.load(path)
             h0, w0 = im.shape[:2]  # origin shape
             if self.specific_shape:
                 # keep ratio resize
@@ -316,12 +317,12 @@ class TrainValDataset(Dataset):
             assert osp.exists(img_dir), f"{img_dir} is an invalid directory path!"
             img_paths += glob.glob(osp.join(img_dir, "**/*"), recursive=True)
 
-        img_paths = sorted(
-            p for p in img_paths if p.split(".")[-1].lower() in IMG_FORMATS and os.path.isfile(p)
-        )
-
+        # img_paths = sorted(
+        #     p for p in img_paths if p.split(".")[-1].lower() in IMG_FORMATS and os.path.isfile(p)
+        # )
         assert img_paths, f"No images found in {img_dir}."
-        img_hash = self.get_hash(img_paths)
+        img_hash = self.get_hash_npy(img_paths)  # @@@ v
+        # img_hash = self.get_hash(img_paths)
         LOGGER.info(f'img record infomation path is:{valid_img_record}')
         if osp.exists(valid_img_record):
             with open(valid_img_record, "r") as f:
@@ -342,7 +343,8 @@ class TrainValDataset(Dataset):
             )
             with Pool(NUM_THREADS) as pool:
                 pbar = tqdm(
-                    pool.imap(TrainValDataset.check_image, img_paths),
+                    # pool.imap(TrainValDataset.check_image, img_paths),
+                    pool.imap(TrainValDataset.check_image_npy, img_paths),
                     total=len(img_paths),
                 )
                 for img_path, shape_per_img, nc_per_img, msg in pbar:
@@ -472,13 +474,13 @@ class TrainValDataset(Dataset):
         """
         nl = len(labels)
 
-        # HSV color-space
-        augment_hsv(
-            img,
-            hgain=self.hyp["hsv_h"],
-            sgain=self.hyp["hsv_s"],
-            vgain=self.hyp["hsv_v"],
-        )
+        # HSV color-space  @@@ v
+        # augment_hsv(
+        #     img,
+        #     hgain=self.hyp["hsv_h"],
+        #     sgain=self.hyp["hsv_s"],
+        #     vgain=self.hyp["hsv_v"],
+        # )
 
         # Flip up-down
         if random.random() < self.hyp["flipud"]:
@@ -520,6 +522,22 @@ class TrainValDataset(Dataset):
             )
             * self.stride
         )
+
+    @staticmethod
+    def check_image_npy(im_file):
+        '''Verify an image.'''
+        nc, msg = 0, ""
+        try:
+            im = np.load(im_file)
+            # print("check_image_npy : ", im.shape)
+            shape = (im.shape[0], im.shape[1])  # (height, width)
+            assert (shape[0] > 9) & (shape[1] > 9), f"image size {shape} <10 pixels"
+            return im_file, shape, nc, msg
+
+        except Exception as e:
+            nc = 1
+            msg = f"WARNING: {im_file}: ignoring corrupt image: {e}"
+            return im_file, None, nc, msg
 
     @staticmethod
     def check_image(im_file):
@@ -658,6 +676,13 @@ class TrainValDataset(Dataset):
         h = hashlib.md5("".join(paths).encode())
         return h.hexdigest()
 
+    @staticmethod
+    def get_hash_npy(img_paths):  # @@@ v
+        hash_md5 = hashlib.md5()
+        for img_path in img_paths:
+            img_data = np.load(img_path)
+            hash_md5.update(img_data.tobytes())
+        return hash_md5.hexdigest()
 
 class LoadData:
     def __init__(self, path, webcam, webcam_addr):

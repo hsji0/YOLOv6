@@ -78,7 +78,7 @@ def build_network(config, in_channels, num_classes):
 
 
 def build_model(cfg, num_classes, device):
-    model = Model(cfg, channels=3, num_classes=num_classes).to(device)
+    model = Model(cfg, channels=2, num_classes=num_classes).to(device)  # @@@ v  channel to 2
     return model
 
 def make_divisible(v, divisor=16):

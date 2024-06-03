@@ -29,7 +29,7 @@ def get_args_parser(add_help=True):
     parser.add_argument('--img-size', default=640, type=int, help='train, val image size (pixels)')
     parser.add_argument('--rect', action='store_true', help='whether to use rectangular training, default is False')
     parser.add_argument('--batch-size', default=32, type=int, help='total batch size for all GPUs')
-    parser.add_argument('--epochs', default=400, type=int, help='number of total epochs to run')
+    parser.add_argument('--epochs', default=30000, type=int, help='number of total epochs to run')
     parser.add_argument('--workers', default=8, type=int, help='number of data loading workers (default: 8)')
     parser.add_argument('--device', default='0', type=str, help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--eval-interval', default=20, type=int, help='evaluate at every interval epochs')
@@ -139,5 +139,16 @@ def main(args):
 
 
 if __name__ == '__main__':
+    sys.argv = [
+        'train.py',  # Script name, it's important to keep it at the beginning
+        '--img-size', '640',
+        '--batch-size', '2',
+        '--epochs', '500',
+        '--device', '0',
+        '--conf-file', r"C:\Users\ATI\Documents\GitHub\YOLOv6_\configs\yolov6_lite\yolov6_lite_s.py",
+        '--data-path', r"C:\Users\ATI\Documents\GitHub\YOLOv6_\data\ati_new_round.yaml",
+        '--output-dir',r"D:\3D AI\3.RESULT\YOLOv6",
+    ]
+
     args = get_args_parser().parse_args()
     main(args)
